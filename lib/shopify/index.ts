@@ -17,6 +17,7 @@ import {
   getCollectionsQuery
 } from './queries/collection';
 import { getMenuQuery } from './queries/menu';
+import { getMetaObjectNotificationQuery } from './queries/metaobjects';
 import { getPageQuery, getPagesQuery } from './queries/page';
 import {
   getProductQuery,
@@ -40,6 +41,7 @@ import {
   ShopifyCollectionsOperation,
   ShopifyCreateCartOperation,
   ShopifyMenuOperation,
+  ShopifyMetaObjectOperation,
   ShopifyPageOperation,
   ShopifyPagesOperation,
   ShopifyProduct,
@@ -415,6 +417,19 @@ export async function getProducts({
   });
 
   return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+}
+
+export async function getNotificationContent({ id }: { id: string }) {
+  if (!process.env.SHOPIFY_NOTIFICATION_ID) return;
+
+  const res = await shopifyFetch<ShopifyMetaObjectOperation>({
+    query: getMetaObjectNotificationQuery,
+    tags: [TAGS.notificationContent],
+    variables: {
+      id
+    }
+  });
+  return res.body.data.metaobject;
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

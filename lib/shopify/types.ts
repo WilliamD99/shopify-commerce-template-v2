@@ -263,3 +263,20 @@ export type ShopifyProductsOperation = {
     sortKey?: string;
   };
 };
+
+export type ShopifyMetaObjectOperation = {
+  data: {
+    metaobject: {
+      handle: string;
+      id: string;
+      type: string;
+      fields: {
+        key: string;
+        value: string;
+      }[];
+    };
+  };
+  variables: {
+    id: string;
+  };
+};

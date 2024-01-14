@@ -1,0 +1,14 @@
+@import './screen';
+
+body {
+  display: block;
+  margin: 0;
+}
+
+*,
+:after,
+:before {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}

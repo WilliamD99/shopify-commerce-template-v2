@@ -28,6 +28,13 @@ module.exports = {
         carousel: 'marquee 60s linear infinite',
         blink: 'blink 1.4s both infinite'
       }
+    },
+    screens: {
+      sm: '576px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      xl2: '1920px'
     }
   },
   future: {
