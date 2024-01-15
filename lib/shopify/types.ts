@@ -280,3 +280,19 @@ export type ShopifyMetaObjectOperation = {
     id: string;
   };
 };
+
+export type ShopifyShopDataOperation = {
+  data: {
+    shop: {
+      name: string;
+      brand: {
+        logo: {
+          alt: string;
+          image: {
+            url: string;
+          };
+        };
+      };
+    };
+  };
+};

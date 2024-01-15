@@ -24,6 +24,7 @@ import {
   getProductRecommendationsQuery,
   getProductsQuery
 } from './queries/product';
+import { getShopData } from './queries/shop';
 import {
   Cart,
   Collection,
@@ -49,6 +50,7 @@ import {
   ShopifyProductRecommendationsOperation,
   ShopifyProductsOperation,
   ShopifyRemoveFromCartOperation,
+  ShopifyShopDataOperation,
   ShopifyUpdateCartOperation
 } from './types';
 
@@ -430,6 +432,15 @@ export async function getNotificationContent({ id }: { id: string }) {
     }
   });
   return res.body.data.metaobject;
+}
+
+export async function getShopContent() {
+  const res = await shopifyFetch<ShopifyShopDataOperation>({
+    query: getShopData,
+    tags: [TAGS.shop]
+  });
+
+  return res.body.data.shop;
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
