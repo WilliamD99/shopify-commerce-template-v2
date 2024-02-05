@@ -17,7 +17,7 @@ import {
   getCollectionsQuery
 } from './queries/collection';
 import { getMenuQuery } from './queries/menu';
-import { getMetaObjectNotificationQuery } from './queries/metaobjects';
+import { getMetaObjectNotificationQuery, getSliderContentQuery } from './queries/metaobjects';
 import { getPageQuery, getPagesQuery } from './queries/page';
 import {
   getProductQuery,
@@ -25,6 +25,7 @@ import {
   getProductsQuery
 } from './queries/product';
 import { getShopData } from './queries/shop';
+
 import {
   Cart,
   Collection,
@@ -33,6 +34,7 @@ import {
   Menu,
   Page,
   Product,
+  ShopSliderContent,
   ShopifyAddToCartOperation,
   ShopifyCart,
   ShopifyCartOperation,
@@ -114,6 +116,78 @@ export async function shopifyFetch<T>({
     throw {
       error: e,
       query
+    };
+  }
+}
+
+export async function shopifyCustomerFetch<T>({
+  cache = 'no-cache',
+  headers,
+  // query,
+  tags,
+  variables,
+  token
+}: {
+  cache?: RequestCache;
+  headers?: HeadersInit;
+  // query: string;
+  tags: string[];
+  variables?: ExtractVariables<T>;
+  token: string | undefined;
+}): Promise<{ status: number; body: T | any } | never> {
+  try {
+    const shop_id = process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID;
+    const auth_endpoint = `https://shopify.com/${shop_id}/account/customer/api/unstable/graphql`;
+    if (!token)
+      return {
+        status: 401,
+        body: {
+          message: 'Unauthorized'
+        }
+      };
+
+    const result = await fetch(auth_endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: token
+      },
+      body: JSON.stringify({
+        operationName: 'SomeQuery',
+        query: 'query { personalAccount { email }}',
+        variables: {}
+      })
+      // body: JSON.stringify({
+      //   operationName: 'SomeQuery',
+      //   query: `query { customer { email }}`,
+      //   variables: {}
+      //   // ...(query && { query }),
+      //   // ...(variables && { variables })
+      // })
+      // cache
+      // ...(tags && { next: { tags } })
+    });
+    const body = await result.json();
+
+    if (body.errors) throw body.errors[0];
+
+    return {
+      status: result.status,
+      body
+    };
+  } catch (e) {
+    if (isShopifyError(e)) {
+      throw {
+        cause: e.cause?.toString() || 'unknown',
+        status: e.status || 500,
+        message: e.message
+        // query
+      };
+    }
+
+    throw {
+      error: e
+      // query
     };
   }
 }
@@ -351,10 +425,30 @@ export async function getMenu(handle: string): Promise<Menu[]> {
   });
 
   return (
-    res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-      title: item.title,
-      path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
-    })) || []
+    res.body?.data?.menu?.items.map(
+      (item: {
+        title: string;
+        url: string;
+        items: { title: string; url: string; items: { title: string; url: string }[] }[];
+      }) => ({
+        title: item.title,
+        path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', ''),
+        items: item.items?.map((nested) => ({
+          title: nested.title,
+          path: nested.url
+            .replace(domain, '')
+            .replace('/collections', '/search')
+            .replace('/pages', ''),
+          items: nested.items?.map((nested2) => ({
+            title: nested2.title,
+            path: nested2.url
+              .replace(domain, '')
+              .replace('/collections', '/search')
+              .replace('/pages', '')
+          }))
+        }))
+      })
+    ) || []
   );
 }
 
@@ -402,11 +496,13 @@ export async function getProductRecommendations(productId: string): Promise<Prod
 export async function getProducts({
   query,
   reverse,
-  sortKey
+  sortKey,
+  limit
 }: {
   query?: string;
   reverse?: boolean;
   sortKey?: string;
+  limit?: number | string;
 }): Promise<Product[]> {
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,
@@ -414,7 +510,8 @@ export async function getProducts({
     variables: {
       query,
       reverse,
-      sortKey
+      sortKey,
+      limit: limit ?? 10
     }
   });
 
@@ -441,6 +538,30 @@ export async function getShopContent() {
   });
 
   return res.body.data.shop;
+}
+
+export async function getSliderContent(id: string | undefined) {
+  if (!id) return null;
+
+  const res = await shopifyFetch<ShopSliderContent>({
+    query: getSliderContentQuery,
+    tags: [TAGS.home_slider],
+    variables: {
+      handle: id
+    }
+  });
+  return res.body.data.metaobject.field.references.edges;
+}
+
+// Customer Account API
+export async function getCustomerAccount(token: string | undefined) {
+  const res = await shopifyCustomerFetch({
+    // query: getCustomerAccQuery,
+    tags: [TAGS.customer],
+    token: token
+  });
+
+  return res.body;
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

@@ -1,57 +1,96 @@
-import Bounded from 'components/bounded';
-import Cart from 'components/cart';
-import OpenCart from 'components/cart/open-cart';
-import LogoSquare from 'components/logo-square';
-import { getMenu, getShopContent } from 'lib/shopify';
-import { Menu } from 'lib/shopify/types';
-import Link from 'next/link';
-import { Suspense } from 'react';
-import MobileMenu from './mobile-menu';
+'use client';
 
-export default async function Navbar() {
-  const menu = await getMenu('next-js-frontend-header-menu');
-  const shopData = await getShopContent();
+import clsx from 'clsx';
+import LogoSquare from 'components/logo-square';
+import { Menu as MenuType, ShopData } from 'lib/shopify/types';
+import { debounce } from 'lodash';
+import Link from 'next/link';
+import { ReactNode, useCallback, useEffect, useState } from 'react';
+import useVisibility from '~/lib/hooks/useVisibility';
+import Menu from './menu';
+import MobileMenu from './mobile-menu';
+import Search from './search';
+export default function Navbar({
+  menu,
+  shopData,
+  children
+}: {
+  menu: MenuType[];
+  shopData: ShopData;
+  children: ReactNode;
+}) {
+  const [isVisible, currentElement] = useVisibility<HTMLDivElement>(100);
+  const [lastScrollY, setLastScrollY] = useState<number>(0);
+
+  const [isHidden, setHidden] = useState<boolean>(false);
+
+  const handleShowWhenScrollUp = () => {
+    let currentY = window.scrollY;
+    if (currentY > lastScrollY) {
+      // Scroll down
+      setHidden(true);
+    } else {
+      // Scroll up
+      if (!isVisible) {
+        setHidden(false);
+      }
+    }
+    setLastScrollY(currentY);
+  };
+
+  // Can't figure out why throttle won't work, so current solution is to use debounce
+  const throttleScrollFunc = useCallback(debounce(handleShowWhenScrollUp, 500), [
+    isVisible,
+    lastScrollY
+  ]);
+
+  useEffect(() => {
+    window.addEventListener('scroll', throttleScrollFunc);
+
+    return () => {
+      window.removeEventListener('scroll', throttleScrollFunc);
+    };
+  }, [handleShowWhenScrollUp]);
 
   return (
-    <Bounded id="nav" size="widest">
-      <nav className="relative flex items-center justify-between">
-        <div className="block flex-none md:hidden">
-          <MobileMenu menu={menu} />
-        </div>
-        <div className="flex w-full items-center justify-between">
-          <div className="flex">
-            <Link
-              href="/"
-              className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
-            >
-              <LogoSquare url={shopData.brand.logo.image.url} alt={shopData.brand.logo.alt} />
-              <div className="ml-2 flex-none text-sm font-medium uppercase md:hidden lg:block">
-                {shopData.name}
+    <>
+      <div id="nav_wrapper" ref={currentElement} className="relative h-full w-full">
+        <div
+          id="nav"
+          className={clsx(
+            'absolute left-0 top-0 z-50 h-full w-full',
+            isVisible !== undefined && !isVisible && 'is-fixed',
+            !isVisible && isHidden && 'is-hidden'
+          )}
+        >
+          <nav className="relative flex h-full items-center justify-between bg-white px-4 lg:px-12">
+            <div className="flex w-full items-center justify-between">
+              <Link
+                href="/"
+                className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
+              >
+                <LogoSquare url={shopData.brand.logo.image.url} alt={shopData.brand.logo.alt} />
+              </Link>
+              {menu.length ? (
+                <ul className="ml-10 hidden gap-x-6 text-base md:flex md:items-center">
+                  {menu.map((item: MenuType) => (
+                    <Menu menu={item} key={item.title} />
+                  ))}
+                </ul>
+              ) : null}
+
+              <div className="flex items-center justify-end space-x-2 md:w-1/3">
+                <Search />
+
+                {children}
+                <div className="block flex-none md:hidden">
+                  <MobileMenu menu={menu} />
+                </div>
               </div>
-            </Link>
-            {menu.length ? (
-              <ul className="ml-10 hidden gap-6 text-sm md:flex md:items-center">
-                {menu.map((item: Menu) => (
-                  <li key={item.title}>
-                    <Link
-                      href={item.path}
-                      className="text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300"
-                    >
-                      {item.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
-          {/* <div className="hidden justify-center md:flex md:w-1/3"><Search /></div> */}
-          <div className="flex justify-end md:w-1/3">
-            <Suspense fallback={<OpenCart />}>
-              <Cart />
-            </Suspense>
-          </div>
+            </div>
+          </nav>
         </div>
-      </nav>
-    </Bounded>
+      </div>
+    </>
   );
 }

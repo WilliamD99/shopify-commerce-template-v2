@@ -1,0 +1,92 @@
+#nav_wrapper {
+  height: 70px;
+  #nav {
+    height: 70px;
+    &.is-fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      transition: transform 0.15s ease;
+    }
+    &.is-hidden {
+      transform: translateY(-100px);
+    }
+    .item {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      z-index: 1001;
+      li {
+        z-index: 1001;
+      }
+      .backdrop {
+        opacity: 0;
+        visibility: hidden;
+
+        &.active {
+          opacity: 1;
+          visibility: visible;
+        }
+      }
+      .sub_menu {
+        max-height: 100vh;
+        overflow: auto;
+        overflow-x: hidden;
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-left: 0;
+        padding-right: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          transform 0.1s ease,
+          opacity 0ms linear 0.1s,
+          visibility 0ms linear 0.1s;
+
+        transform-origin: top center;
+        transform: scaleY(0);
+        top: 65px;
+        z-index: 1001;
+        .pre_menu {
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition:
+            transform 0.1s,
+            opacity 0.1s;
+          transition-delay: 0s;
+        }
+
+        &.active {
+          z-index: 9999;
+          opacity: 1;
+          visibility: visible;
+          transform: scaleY(1);
+          transition:
+            transform 0.25s ease,
+            opacity 0ms,
+            visibility 0ms;
+          .pre_menu {
+            opacity: 1;
+            visibility: visible;
+
+            transform: translateY(0);
+            transition:
+              transform 0.3s ease,
+              opacity 0.2s linear;
+            transition-delay: 0.2s;
+          }
+        }
+      }
+      // .sub_menu--bg {
+      //   position: fixed;
+      //   top: 0;
+      //   left: 0;
+      //   height: 100vh;
+      //   width: 100vw;
+      //   z-index: 1000;
+      // }
+    }
+  }
+}

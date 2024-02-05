@@ -37,11 +37,12 @@ export function VariantSelector({
       {}
     )
   }));
+  // console.log(combinations);
 
   return options.map((option) => (
     <dl className="mb-8" key={option.id}>
-      <dt className="mb-4 text-sm uppercase tracking-wide">{option.name}</dt>
-      <dd className="flex flex-wrap gap-3">
+      <dt className="mb-4 text-sm font-semibold tracking-wide">Select {option.name}</dt>
+      <dd className="grid grid-cols-4 gap-2">
         {option.values.map((value) => {
           const optionNameLowerCase = option.name.toLowerCase();
 
@@ -86,10 +87,10 @@ export function VariantSelector({
               }}
               title={`${option.name} ${value}${!isAvailableForSale ? ' (Out of Stock)' : ''}`}
               className={clsx(
-                'flex min-w-[48px] items-center justify-center rounded-full border bg-neutral-100 px-2 py-1 text-sm dark:border-neutral-800 dark:bg-neutral-900',
+                'flex min-w-[48px] items-center justify-center rounded-md border bg-white px-5 py-2 text-sm dark:border-neutral-800 dark:bg-neutral-900',
                 {
-                  'cursor-default ring-2 ring-blue-600': isActive,
-                  'ring-1 ring-transparent transition duration-300 ease-in-out hover:scale-110 hover:ring-blue-600 ':
+                  'cursor-default ring-2 ring-black': isActive,
+                  'ring-1 ring-transparent transition duration-300 ease-in-out hover:ring-black':
                     !isActive && isAvailableForSale,
                   'relative z-10 cursor-not-allowed overflow-hidden bg-neutral-100 text-neutral-500 ring-1 ring-neutral-300 before:absolute before:inset-x-0 before:-z-10 before:h-px before:-rotate-45 before:bg-neutral-300 before:transition-transform dark:bg-neutral-900 dark:text-neutral-400 dark:ring-neutral-700 before:dark:bg-neutral-700':
                     !isAvailableForSale

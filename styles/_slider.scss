@@ -1,0 +1,14 @@
+#home_slider {
+  .slider_content {
+    height: 550px;
+
+    @include lg {
+      height: 650px;
+    }
+    .slider_item {
+      .slider_bg {
+        object-position: 50% 50%;
+      }
+    }
+  }
+}

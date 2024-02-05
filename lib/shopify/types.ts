@@ -43,6 +43,14 @@ export type Image = {
 export type Menu = {
   title: string;
   path: string;
+  items: {
+    title: string;
+    path: string;
+    items: {
+      title: string;
+      path: string;
+    }[];
+  }[];
 };
 
 export type Money = {
@@ -218,6 +226,14 @@ export type ShopifyMenuOperation = {
       items: {
         title: string;
         url: string;
+        items: {
+          title: string;
+          url: string;
+          items: {
+            title: string;
+            url: string;
+          }[];
+        }[];
       }[];
     };
   };
@@ -261,6 +277,7 @@ export type ShopifyProductsOperation = {
     query?: string;
     reverse?: boolean;
     sortKey?: string;
+    limit?: number | string;
   };
 };
 
@@ -285,6 +302,9 @@ export type ShopifyShopDataOperation = {
   data: {
     shop: {
       name: string;
+      shippingPolicy: {
+        body: string;
+      };
       brand: {
         logo: {
           alt: string;
@@ -296,3 +316,54 @@ export type ShopifyShopDataOperation = {
     };
   };
 };
+
+export type ShopData = {
+  name: string;
+  shippingPolicy: {
+    body: string;
+  };
+  brand: {
+    logo: {
+      alt: string;
+      image: {
+        url: string;
+      };
+    };
+  };
+};
+
+export type ShopSliderContent = {
+  data: {
+    metaobject: {
+      field: {
+        references: {
+          edges: {
+            node: {
+              handle: string;
+              fields: {
+                key: string;
+                type: string;
+                value: string;
+                reference?: {
+                  image: {
+                    url: string;
+                  };
+                };
+              }[];
+            };
+          }[];
+        };
+      };
+    };
+  };
+  variables: {
+    handle: string;
+  };
+};
+
+export interface AccessTokenResponse {
+  access_token: string;
+  expires_in: number;
+  id_token: string;
+  refresh_token: string;
+}

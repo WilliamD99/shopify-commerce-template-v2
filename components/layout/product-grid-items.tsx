@@ -8,7 +8,7 @@ export default function ProductGridItems({ products }: { products: Product[] }) 
     <>
       {products.map((product) => (
         <Grid.Item key={product.handle} className="animate-fadeIn">
-          <Link className="relative inline-block h-full w-full" href={`/product/${product.handle}`}>
+          <Link href={`/product/${product.handle}`} className="relative inline-block h-full w-full">
             <GridTileImage
               alt={product.title}
               label={{

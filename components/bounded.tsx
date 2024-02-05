@@ -18,7 +18,7 @@ export default function Bounded({
 }: BoundedProps) {
   return (
     <>
-      <Comp id={id} className={clsx('px py-8 md:px-6 md:py-10 lg:py-12', className)}>
+      <Comp id={id} className={clsx('px md:px-6', className)}>
         <div
           className={clsx(
             'mx-auto w-full',

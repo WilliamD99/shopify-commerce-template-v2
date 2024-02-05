@@ -12,7 +12,8 @@ module.exports = {
         hostname: 'cdn.shopify.com',
         pathname: '/s/files/**'
       }
-    ]
+    ],
+    deviceSizes: [576, 1024]
   },
   async redirects() {
     return [
@@ -22,5 +23,6 @@ module.exports = {
         permanent: true
       }
     ];
-  }
+  },
+  reactStrictMode: false
 };

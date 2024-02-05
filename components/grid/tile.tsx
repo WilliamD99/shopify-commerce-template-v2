@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { VariantSelector } from 'components/product/variant-selector';
+
 import Image from 'next/image';
 import Label from '../label';
 
@@ -10,29 +10,30 @@ export function GridTileImage({
   availableForSale,
   variants,
   options,
+  cover,
   ...props
 }: {
   isInteractive?: boolean;
   active?: boolean;
-  availableForSale: boolean;
-  variants: any;
-  options: any;
+  availableForSale?: boolean;
+  variants?: any;
+  options?: any;
   label?: {
     title: string;
     amount: string;
     currencyCode: string;
     position?: 'bottom' | 'center';
   };
+  cover?: boolean;
 } & React.ComponentProps<typeof Image>) {
-  console.log(options);
   return (
     <div
       className={clsx(
-        'group flex h-full w-full flex-col items-center justify-center overflow-hidden',
+        'group flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-md',
         {
           relative: label,
-          'border-2 border-blue-600': active,
-          'border-neutral-200 dark:border-neutral-800': !active
+          'border-neutral-200 dark:border-neutral-800': !active,
+          'brightness-75': active
         }
       )}
     >
@@ -42,7 +43,8 @@ export function GridTileImage({
           <Image
             src={props.src}
             className={clsx('relative h-full w-full object-cover', {
-              'transition duration-300 ease-in-out group-hover:scale-105': isInteractive
+              'transition duration-300 ease-in-out group-hover:scale-105': isInteractive,
+              'object-cover': cover
             })}
             fill
             alt={`product-${label?.title}`}
@@ -58,7 +60,6 @@ export function GridTileImage({
           position={label.position}
         />
       ) : null}
-      <VariantSelector options={options} variants={variants} />
     </div>
   );
 }
