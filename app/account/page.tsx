@@ -6,6 +6,8 @@ import AccountEditForm from '~/components/customer/account-edit-form';
 import UnAuthorize from './unauthorize';
 // import AccountAddressEditForm from '~/components/customer/account-address-edit-form';
 
+export const fetchCache = 'force-no-store';
+
 export default async function AccountPage() {
   // Get access token from cookie or headers
   const cookieStore = cookies();
