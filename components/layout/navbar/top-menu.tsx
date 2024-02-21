@@ -1,14 +1,19 @@
-import { cookies, headers } from 'next/headers';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
+import AccountBtn from '~/components/customer/account-btn';
 import SignInBtn from '~/components/customer/signin-btn';
 import { Separator } from '~/components/ui/separator';
+import { getAccessCodeFromHeader } from '~/lib/utils-server';
 
 export default function TopMenu() {
-  const codeCookie = cookies().get('code')?.value;
+  const hasAtknInCookie = cookies().has('access');
+  const hasAtknInHeaders = getAccessCodeFromHeader();
 
-  const headerList = headers();
-  const url = headerList.get('x-url')!;
-  const query = new URL(url).searchParams.get('code') ?? null;
+  const isLoggedin = hasAtknInCookie || hasAtknInHeaders;
+
+  // const headerList = headers();
+  // const url = headerList.get('x-url')!;
+  // const query = new URL(url).searchParams.get('code') ?? null;
 
   return (
     <>
@@ -20,18 +25,17 @@ export default function TopMenu() {
         <Link className="text-xs font-bold hover:text-neutral-500" href="#">
           Help
         </Link>
-        <Separator orientation="vertical" className="h-4 bg-black" />
-        <Link className="text-xs font-bold hover:text-neutral-500" href="#">
-          Join Us
-        </Link>
-        <Separator orientation="vertical" className="h-4 bg-black" />
-        {!codeCookie && !query ? (
-          <SignInBtn />
-        ) : (
-          <Link className="text-xs font-bold hover:text-neutral-500" href="/account">
-            My Account
-          </Link>
+        {!isLoggedin && (
+          <>
+            <Separator orientation="vertical" className="h-4 bg-black" />
+            <Link className="text-xs font-bold hover:text-neutral-500" href="#">
+              Join Us
+            </Link>
+          </>
         )}
+
+        <Separator orientation="vertical" className="h-4 bg-black" />
+        {!isLoggedin ? <SignInBtn /> : <AccountBtn />}
       </div>
     </>
   );

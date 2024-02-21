@@ -19,7 +19,7 @@ export async function generateAuthHeader() {
     { name: 'SHA-256' },
     new TextEncoder().encode(`${clientId}:${clientSecret}`)
   );
-  return arrayBufferToBase64(credentials);
+  return convertBufferToString(credentials);
 }
 
 function arrayBufferToBase64(arrayBuffer: ArrayBuffer): string {

@@ -1,4 +1,9 @@
-import { HIDDEN_PRODUCT_TAG, SHOPIFY_GRAPHQL_API_ENDPOINT, TAGS } from 'lib/constants';
+import {
+  HIDDEN_PRODUCT_TAG,
+  SHOPIFY_ADMIN_GRAPHQL_API_ENDPOINT,
+  SHOPIFY_GRAPHQL_API_ENDPOINT,
+  TAGS
+} from 'lib/constants';
 import { isShopifyError } from 'lib/type-guards';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
@@ -10,12 +15,23 @@ import {
   editCartItemsMutation,
   removeFromCartMutation
 } from './mutations/cart';
+import {
+  customerAddAddressMutation,
+  customerDeleteAddressMutation,
+  customerUpdateAddressMutation,
+  customerUpdateMutationAdmin
+} from './mutations/customer';
 import { getCartQuery } from './queries/cart';
 import {
   getCollectionProductsQuery,
   getCollectionQuery,
   getCollectionsQuery
 } from './queries/collection';
+import {
+  getCustomerAccQuery,
+  getCustomerAccountQueryAdmin,
+  getCustomerOrdersQueryAdmin
+} from './queries/customer';
 import { getMenuQuery } from './queries/menu';
 import { getMetaObjectNotificationQuery, getSliderContentQuery } from './queries/metaobjects';
 import { getPageQuery, getPagesQuery } from './queries/page';
@@ -25,15 +41,21 @@ import {
   getProductsQuery
 } from './queries/product';
 import { getShopData } from './queries/shop';
-
 import {
   Cart,
   Collection,
   Connection,
+  CustomerAddAddressMutationType,
+  CustomerDeleteAddressMutationType,
+  CustomerOrderQueryType,
+  CustomerUpdateAddressMutationType,
+  CustomerUpdateMutationType,
   Image,
   Menu,
   Page,
   Product,
+  ShopCustomerContent,
+  ShopCustomerContentAdmin,
   ShopSliderContent,
   ShopifyAddToCartOperation,
   ShopifyCart,
@@ -60,10 +82,13 @@ const domain = process.env.SHOPIFY_STORE_DOMAIN
   ? ensureStartsWith(process.env.SHOPIFY_STORE_DOMAIN, 'https://')
   : '';
 const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`;
+const adminEndpoint = `${domain}${SHOPIFY_ADMIN_GRAPHQL_API_ENDPOINT}`;
 const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
+const adminKey = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN!;
 
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
+// Storefront
 export async function shopifyFetch<T>({
   cache = 'force-cache',
   headers,
@@ -120,52 +145,94 @@ export async function shopifyFetch<T>({
   }
 }
 
+export async function shopifyAdminFetch<T>({
+  cache = 'force-cache',
+  headers,
+  query,
+  tags,
+  variables
+}: {
+  cache?: RequestCache;
+  headers?: HeadersInit;
+  query: string;
+  tags?: string[];
+  variables?: ExtractVariables<T>;
+}): Promise<{ status: number; body: T } | never> {
+  try {
+    const result = await fetch(adminEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': adminKey,
+        ...headers
+      },
+      body: JSON.stringify({
+        ...(query && { query }),
+        ...(variables && { variables })
+      }),
+      cache,
+      ...(tags && { next: { tags } })
+    });
+    const body = await result.json();
+
+    if (body.errors) throw body.errors[0];
+
+    return {
+      status: result.status,
+      body
+    };
+  } catch (e) {
+    if (isShopifyError(e)) {
+      throw {
+        cause: e.cause?.toString() || 'unknown',
+        status: e.status || 500,
+        message: e.message,
+        query
+      };
+    }
+
+    throw {
+      error: e,
+      query
+    };
+  }
+}
+
+// Customer Account API
 export async function shopifyCustomerFetch<T>({
   cache = 'no-cache',
   headers,
-  // query,
+  query,
   tags,
   variables,
   token
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
-  // query: string;
-  tags: string[];
+  query: string;
+  tags?: string[];
   variables?: ExtractVariables<T>;
-  token: string | undefined;
-}): Promise<{ status: number; body: T | any } | never> {
+  token: string;
+}): Promise<{ status: number; body: T } | never> {
   try {
     const shop_id = process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID;
     const auth_endpoint = `https://shopify.com/${shop_id}/account/customer/api/unstable/graphql`;
-    if (!token)
-      return {
-        status: 401,
-        body: {
-          message: 'Unauthorized'
-        }
-      };
 
     const result = await fetch(auth_endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: token
+        Authorization: token,
+        ...headers
       },
       body: JSON.stringify({
         operationName: 'SomeQuery',
-        query: 'query { personalAccount { email }}',
-        variables: {}
-      })
-      // body: JSON.stringify({
-      //   operationName: 'SomeQuery',
-      //   query: `query { customer { email }}`,
-      //   variables: {}
-      //   // ...(query && { query }),
-      //   // ...(variables && { variables })
-      // })
-      // cache
-      // ...(tags && { next: { tags } })
+        variables: {},
+        ...(query && { query }),
+        ...(variables && { variables })
+      }),
+      cache,
+      ...(tags && { next: { tags } })
     });
     const body = await result.json();
 
@@ -555,13 +622,139 @@ export async function getSliderContent(id: string | undefined) {
 
 // Customer Account API
 export async function getCustomerAccount(token: string | undefined) {
-  const res = await shopifyCustomerFetch({
-    // query: getCustomerAccQuery,
+  const startTime = Date.now(); // Record the start time
+
+  if (!token) return null;
+  const res = await shopifyCustomerFetch<ShopCustomerContent>({
+    query: getCustomerAccQuery,
     tags: [TAGS.customer],
-    token: token
+    token: token,
+    cache: 'force-cache'
+  });
+  const endTime = Date.now(); // Record the end time
+  const elapsedTime = (endTime - startTime) / 1000; // Calculate elapsed time in seconds
+  console.log(`updateCustomer function ran for ${elapsedTime} seconds`);
+  return res.body.data.customer;
+}
+
+// Admin API (For more details)
+export async function getCustomerAccountAdmin(id: string) {
+  const res = await shopifyAdminFetch<ShopCustomerContentAdmin>({
+    query: getCustomerAccountQueryAdmin,
+    tags: [TAGS.customer],
+    variables: {
+      id
+    }
+  });
+  return res.body.data.customer;
+}
+
+// Update through admin api
+export async function updateCustomer(input: {
+  firstName?: FormDataEntryValue | null;
+  lastName?: FormDataEntryValue | null;
+  phone?: FormDataEntryValue | null;
+  email?: FormDataEntryValue | null;
+  id: FormDataEntryValue | null;
+}) {
+  if (!input) return null;
+  const res = await shopifyAdminFetch<CustomerUpdateMutationType>({
+    query: customerUpdateMutationAdmin,
+    variables: {
+      input: input
+    }
+  });
+  return res.body.data.customerUpdate;
+}
+
+export async function addCustomerAddress(
+  token: string | undefined,
+  input: {
+    firstName: FormDataEntryValue | null;
+    lastName: FormDataEntryValue | null;
+    address1: FormDataEntryValue | null;
+    address2: FormDataEntryValue | null;
+    city: FormDataEntryValue | null;
+    zoneCode: FormDataEntryValue | null;
+    phoneNumber: FormDataEntryValue | null;
+  }
+) {
+  if (!token) return null;
+  const res = await shopifyCustomerFetch<CustomerAddAddressMutationType>({
+    query: customerAddAddressMutation,
+    token: token,
+    tags: [TAGS.customer],
+    variables: {
+      address: input
+    }
   });
 
-  return res.body;
+  return res.body.data.customerAddressCreate;
+}
+
+export async function updateCustomerAddress(
+  token: string | undefined,
+  id: FormDataEntryValue | undefined,
+  address: {
+    address1?: FormDataEntryValue | null;
+    address2?: FormDataEntryValue | null;
+    city?: FormDataEntryValue | null;
+    zip?: FormDataEntryValue | null;
+    territoryCode?: FormDataEntryValue | null;
+  },
+  defaultAddress: boolean = false
+) {
+  if (!id || !token) return null;
+  let formattedId = id
+    .toString()
+    .replace('MailingAddress', 'CustomerAddress')
+    .split('?model_name')[0];
+  const res = await shopifyCustomerFetch<CustomerUpdateAddressMutationType>({
+    query: customerUpdateAddressMutation,
+    token: token,
+    variables: {
+      addressId: formattedId,
+      address,
+      defaultAddress: defaultAddress ?? false
+    },
+    cache: 'no-cache'
+  });
+  return res.body.data.customerAddressUpdate;
+}
+
+export async function deleteCustomerAddress(
+  token: string | undefined,
+  id: FormDataEntryValue | undefined
+) {
+  if (!id || !token) throw new Error('invalid id or token');
+  let formattedId = id
+    .toString()
+    .replace('MailingAddress', 'CustomerAddress')
+    .split('?model_name')[0];
+
+  let res = await shopifyCustomerFetch<CustomerDeleteAddressMutationType>({
+    query: customerDeleteAddressMutation,
+    token: token,
+    variables: {
+      addressId: formattedId
+    },
+    cache: 'no-cache'
+  });
+
+  return res.body.data.customerAddressDelete;
+}
+
+// Get orders through admin api
+export async function getCustomerOrders(id: string) {
+  if (!id) throw new Error('No id provided');
+  const res = await shopifyAdminFetch<CustomerOrderQueryType>({
+    query: getCustomerOrdersQueryAdmin,
+    variables: {
+      id
+    },
+    tags: [TAGS.customer]
+  });
+  return res.body.data.customer;
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

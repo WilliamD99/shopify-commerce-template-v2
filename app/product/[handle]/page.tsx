@@ -80,7 +80,7 @@ export default async function ProductPage({ params }: { params: { handle: string
           __html: JSON.stringify(productJsonLd)
         }}
       />
-      <Bounded size="widest">
+      <Bounded size="widest" className="mt-10">
         <div className="flex flex-col bg-white dark:border-neutral-800 dark:bg-black lg:flex-row">
           <div className="sticky top-20 h-full w-full basis-full lg:basis-2/3">
             <Gallery

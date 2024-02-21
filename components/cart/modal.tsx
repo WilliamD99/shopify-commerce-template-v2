@@ -24,6 +24,14 @@ export default function CartModal({ cart }: { cart: Cart | undefined }) {
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
 
+  const handleCheckoutNavigate = async () => {
+    let url = cart?.checkoutUrl;
+    if (!url) return;
+    // await navigateCheckoutWithAtkn(url);
+
+    window.location.href = `${cart?.checkoutUrl}&logged_in=true`;
+  };
+
   useEffect(() => {
     // Open cart modal when quantity changes.
     if (cart?.totalQuantity !== quantityRef.current) {
@@ -174,12 +182,13 @@ export default function CartModal({ cart }: { cart: Cart | undefined }) {
                       />
                     </div>
                   </div>
-                  <a
-                    href={cart.checkoutUrl}
+                  <button
+                    // href={`${cart.checkoutUrl}&logged_in=true`}
+                    onClick={handleCheckoutNavigate}
                     className="block w-full rounded-full bg-blue-600 p-3 text-center text-sm font-medium text-white opacity-90 hover:opacity-100"
                   >
                     Proceed to Checkout
-                  </a>
+                  </button>
                 </div>
               )}
             </Dialog.Panel>

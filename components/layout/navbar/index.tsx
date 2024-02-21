@@ -67,7 +67,7 @@ export default function Navbar({
             <div className="flex w-full items-center justify-between">
               <Link
                 href="/"
-                className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
+                className="mr-2 flex w-full items-center md:w-auto lg:mr-6 lg:justify-center"
               >
                 <LogoSquare url={shopData.brand.logo.image.url} alt={shopData.brand.logo.alt} />
               </Link>
@@ -80,7 +80,9 @@ export default function Navbar({
               ) : null}
 
               <div className="flex items-center justify-end space-x-2 md:w-1/3">
-                <Search />
+                <div className="hidden lg:block">
+                  <Search />
+                </div>
 
                 {children}
                 <div className="block flex-none md:hidden">

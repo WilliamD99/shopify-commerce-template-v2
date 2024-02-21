@@ -361,6 +361,231 @@ export type ShopSliderContent = {
   };
 };
 
+export type ShopCustomerContent = {
+  data: {
+    customer: {
+      id: string;
+      firstName?: string;
+      lastName?: string;
+      imageUrl?: string;
+      defaultAddress?: {
+        id: string;
+        address1: string;
+        address2: string;
+        city: string;
+        country: string;
+        province: string;
+        zip: string;
+      };
+      emailAddress?: {
+        emailAddress: string;
+      };
+      phoneNumber?: {
+        phoneNumber: string;
+      };
+    };
+  };
+};
+
+export type ShopCustomerContentAdmin = {
+  data: {
+    customer: {
+      addresses: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        address1: string;
+        address2: string;
+        city: string;
+        country: string;
+        countryCodeV2: string;
+        province: string;
+        provinceCode: string;
+        zip: string;
+      }[];
+      defaultAddress: {
+        id: string;
+      };
+    };
+    userErrors: {
+      field: string[];
+      message: string;
+    }[];
+  };
+  variables: {
+    id: string;
+  };
+};
+
+export type CustomerUpdateMutationType = {
+  data: {
+    customerUpdate: {
+      customer: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+      };
+      userErrors: {
+        field: string[];
+        message: string;
+      }[];
+    };
+  };
+  variables: {
+    input: {
+      firstName?: FormDataEntryValue | null;
+      lastName?: FormDataEntryValue | null;
+      phone?: FormDataEntryValue | null;
+      email?: FormDataEntryValue | null;
+      id: FormDataEntryValue | null;
+    };
+  };
+};
+
+export type CustomerAddAddressMutationType = {
+  data: {
+    customerAddressCreate: {
+      customerAddress: {};
+      userErrors: {
+        field: string[];
+        message: string;
+      }[];
+    };
+  };
+  variables: {
+    address: {
+      firstName: FormDataEntryValue | null;
+      lastName: FormDataEntryValue | null;
+      address1: FormDataEntryValue | null;
+      address2: FormDataEntryValue | null;
+      city: FormDataEntryValue | null;
+      zoneCode: FormDataEntryValue | null;
+      phoneNumber: FormDataEntryValue | null;
+    };
+  };
+};
+
+export type CustomerUpdateAddressMutationType = {
+  data: {
+    customerAddressUpdate: {
+      customerAddress: {
+        id: string;
+        address1: string;
+        address2: string;
+        city: string;
+        country: string;
+        province: string;
+        zip: string;
+      };
+      userErrors: {
+        field: string[];
+        message: string;
+      }[];
+    };
+  };
+  variables: {
+    addressId: string | undefined;
+    address: {
+      address1?: FormDataEntryValue | null;
+      address2?: FormDataEntryValue | null;
+      city?: FormDataEntryValue | null;
+      // country?: FormDataEntryValue | null;
+      // province?: FormDataEntryValue | null;
+      zip?: FormDataEntryValue | null;
+    };
+    defaultAddress: boolean | null;
+  };
+};
+
+export type CustomerDeleteAddressMutationType = {
+  data: {
+    customerAddressDelete: {
+      deletedAddressId: string;
+      userErrors: {
+        field: string[];
+        message: string;
+      }[];
+    };
+  };
+  variables: {
+    addressId: string | undefined;
+  };
+};
+
+export type CustomerOrderQueryType = {
+  data: {
+    customer: {
+      id: string;
+      orders: {
+        edges: {
+          cursor: string;
+          node: {
+            id: string;
+            confirmationNumber: string;
+            subtotalLineItemsQuantity: number;
+            createdAt: string;
+            confirmed: boolean;
+            fullyPaid: boolean;
+            note: string;
+            taxLines: {
+              title: string;
+              priceSet: {
+                presentmentMoney: {
+                  amount: string;
+                };
+              };
+            }[];
+            totalPriceSet: {
+              presentmentMoney: {
+                amount: string;
+              };
+            };
+            displayAddress: {
+              id: string;
+              address1: string;
+              address2: string;
+              city: string;
+              provinceCode: string;
+              countryCodeV2: string;
+              firstName: string;
+              lastName: string;
+              phone: string;
+            };
+            lineItems: {
+              edges: {
+                cursor: string;
+                node: {
+                  name: string;
+                  quantity: number;
+                  image: {
+                    url: string;
+                  };
+                  discountedTotalSet: {
+                    presentmentMoney: {
+                      amount: string;
+                    };
+                  };
+                  originalUnitPriceSet: {
+                    presentmentMoney: {
+                      amount: string;
+                    };
+                  };
+                };
+              }[];
+            };
+          };
+        }[];
+      };
+    };
+  };
+  variables: {
+    id: string;
+  };
+};
+
 export interface AccessTokenResponse {
   access_token: string;
   expires_in: number;

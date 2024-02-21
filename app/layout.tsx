@@ -8,6 +8,11 @@ import Cart from '~/components/cart';
 import OpenCart from '~/components/cart/open-cart';
 import TopMenu from '~/components/layout/navbar/top-menu';
 
+// const TopMenu = dynamic(() => import('~/components/layout/navbar/top-menu'), {
+//   ssr: false
+// });
+
+import { Toaster } from 'components/ui/sonner';
 import 'styles/index.css';
 import './globals.css';
 
@@ -58,6 +63,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         <Suspense>
           <main>{children}</main>
         </Suspense>
+        <Toaster />
       </body>
     </html>
   );

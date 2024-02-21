@@ -24,5 +24,10 @@ module.exports = {
       }
     ];
   },
-  reactStrictMode: false
+  reactStrictMode: false,
+  logging: {
+    fetches: {
+      fullUrl: true
+    }
+  }
 };

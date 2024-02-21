@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Step to authorize using Shopify Customer Account API
-
-// Step 1: Login through the given shopify url (using Email and code)
-// Step 2: Successfully logged in customer will be redirect back to the site with code added to the url
-// Step 3: Using this code to get an access code to authenticate with the API (fetch to get the code)
-// Step 4: Using the code that was returned in step 3 to get another access code, to query the api
-
 interface AuthAccessToken {
   access_token?: string;
   refresh_token?: string;
@@ -27,7 +20,6 @@ interface AcessToken {
   error?: string;
   error_description?: string;
 }
-
 const getAuthAccessToken = async (code: string): Promise<AuthAccessToken> => {
   try {
     const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_ID;
@@ -37,11 +29,12 @@ const getAuthAccessToken = async (code: string): Promise<AuthAccessToken> => {
     const clientSecret = process.env.SHOPIFY_CUSTOMER_ACCOUNT_SK;
     const credentials = btoa(`${clientId}:${clientSecret}`);
 
-    let callbackUri = process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_CALLBACK ?? '/';
-
     body.append('grant_type', 'authorization_code');
     body.append('client_id', clientId ?? '');
-    body.append('redirect_uri', callbackUri);
+    body.append(
+      'redirect_uri',
+      `https://7b2f-2405-4802-134a-7490-77-81b4-a3d8-4293.ngrok-free.app/account`
+    );
     body.append('code', code);
     const headers = {
       'content-type': 'application/x-www-form-urlencoded',
@@ -137,81 +130,61 @@ const getAuthAccessTokenFromRfToken = async (code: string): Promise<AuthAccessTo
   }
 };
 
-export async function middleware(request: NextRequest) {
-  const isAccountPage = request.nextUrl.pathname.startsWith('/account');
-  if (isAccountPage) {
-    const paramsCode = request.nextUrl.searchParams.get('code');
-    // If there's a code inside the url
-    if (paramsCode) {
-      // First need to check if the cookies are there
-      // to prevent user from sending multiple requests
-      // from a same code
-      let isAuthTokenExist = request.cookies.has('auth');
-      let isAcessTokenExist = request.cookies.has('access');
+export const handleAuth = async (paramsCode: string, request: NextRequest) => {
+  // First need to check if the cookies are there
+  // to prevent user from sending multiple requests
+  // from a same code
+  let isAuthTokenExist = request.cookies.has('auth');
+  let isAcessTokenExist = request.cookies.has('access');
+  console.log(isAcessTokenExist);
 
-      // if there's no token exist
-      if (!isAuthTokenExist || !isAcessTokenExist) {
-        // Check if the refresh token exist
-        // If it is, then get a new auth token from this refresh token
-        let isRfTokenExist = request.cookies.get('refresh')?.value;
+  // if there's no token exist
+  if (!isAuthTokenExist || !isAcessTokenExist) {
+    // Check if the refresh token exist
+    // If it is, then get a new auth token from this refresh token
+    let isRfTokenExist = request.cookies.get('refresh')?.value;
 
-        if (isRfTokenExist) {
-          const newAuthToken = await getAuthAccessTokenFromRfToken(isRfTokenExist);
-          if (newAuthToken.access_token) {
-            const newAccessToken = await getAccessToken(newAuthToken.access_token);
-            if (newAccessToken.access_token) {
-              const response = NextResponse.next();
-              response.cookies.set('auth', newAuthToken.access_token, {
-                maxAge: newAuthToken.expires_in ? newAuthToken.expires_in : 7200
-              });
-              response.cookies.set('refresh', newAuthToken.refresh_token ?? '');
-              response.cookies.set('access', newAccessToken.access_token, {
-                maxAge: newAccessToken.expires_in ? newAccessToken.expires_in : 7200
-              });
+    if (isRfTokenExist) {
+      const newAuthToken = await getAuthAccessTokenFromRfToken(isRfTokenExist);
+      if (newAuthToken.access_token) {
+        const newAccessToken = await getAccessToken(newAuthToken.access_token);
+        if (newAccessToken.access_token) {
+          const response = NextResponse.next();
+          response.cookies.set('auth', newAuthToken.access_token, {
+            maxAge: newAuthToken.expires_in ? newAuthToken.expires_in * 1000 : 7200 * 1000
+          });
+          response.cookies.set('refresh', newAuthToken.refresh_token ?? '');
+          response.cookies.set('access', newAccessToken.access_token, {
+            maxAge: newAccessToken.expires_in ? newAccessToken.expires_in * 1000 : 7200 * 1000
+          });
 
-              return response;
-            }
-          }
-        } else {
-          // No token exists nor refresh token
-          const authAccessToken = await getAuthAccessToken(paramsCode);
-          if (authAccessToken.access_token) {
-            const accessToken = await getAccessToken(authAccessToken.access_token);
-
-            if (accessToken.access_token) {
-              const response = NextResponse.next();
-
-              response.cookies.set('auth', authAccessToken.access_token, {
-                maxAge: authAccessToken.expires_in ? authAccessToken.expires_in : 7200 // Default
-              });
-              response.cookies.set('refresh', authAccessToken.refresh_token ?? '');
-              response.cookies.set('access', accessToken.access_token, {
-                maxAge: accessToken.expires_in ? accessToken.expires_in : 7200
-              });
-
-              return response;
-            } else {
-              // In case there's no access token from the request
-            }
-          }
+          return response;
         }
-      } else {
-        // In case there's no auth acess token from the request
       }
     } else {
-      // If there's no code in the params
+      // No token exists nor refresh token
+      const authAccessToken = await getAuthAccessToken(paramsCode);
+      if (authAccessToken.access_token) {
+        const accessToken = await getAccessToken(authAccessToken.access_token);
+
+        if (accessToken.access_token) {
+          const response = NextResponse.next();
+
+          response.cookies.set('auth', authAccessToken.access_token, {
+            maxAge: authAccessToken.expires_in ? authAccessToken.expires_in * 1000 : 7200 * 1000 // Default
+          });
+          response.cookies.set('refresh', authAccessToken.refresh_token ?? '');
+          response.cookies.set('access', accessToken.access_token, {
+            maxAge: accessToken.expires_in ? accessToken.expires_in * 1000 : 7200 * 1000
+          });
+
+          return response;
+        } else {
+          // In case there's no access token from the request
+        }
+      }
     }
+  } else {
+    // In case there's no auth acess token from the request
   }
-}
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
-  ]
 };
