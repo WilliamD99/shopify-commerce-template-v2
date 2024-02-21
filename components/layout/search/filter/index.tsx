@@ -75,7 +75,7 @@ export default function FilterList({ list, title }: { list: ListItem[]; title?: 
             {/* <FilterItemList list={list} /> */}
             <SelectContent>
               {list.map((item, index) => (
-                <SelectItem key={index} value={item.slug}>
+                <SelectItem key={index} value={item.title}>
                   {item.title}
                 </SelectItem>
               ))}
