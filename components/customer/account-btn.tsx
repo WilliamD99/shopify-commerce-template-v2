@@ -36,7 +36,7 @@ export default function AccountBtn() {
 
   return (
     <>
-      <div className="relative z-50">
+      <div className="relative z-40">
         <DropdownMenu>
           <DropdownMenuTrigger className="flex">
             <p className="text-xs font-bold hover:text-neutral-500">My Account</p>

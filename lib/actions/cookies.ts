@@ -2,6 +2,20 @@
 
 import { cookies } from 'next/headers';
 
+async function setCookie(
+  name: string,
+  value: string,
+  config?: {
+    maxAge?: number;
+    domain?: string;
+  }
+) {
+  const cookieStore = cookies();
+
+  cookieStore.set(name, value, config);
+  console.log('done');
+}
+
 async function deleteCookie(name: string, type: 'hard' | 'easy' = 'hard') {
   const cookieStore = cookies();
 
@@ -14,4 +28,4 @@ async function deleteCookie(name: string, type: 'hard' | 'easy' = 'hard') {
   }
 }
 
-export { deleteCookie };
+export { deleteCookie, setCookie };

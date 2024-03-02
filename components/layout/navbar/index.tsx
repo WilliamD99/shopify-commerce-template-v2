@@ -58,7 +58,7 @@ export default function Navbar({
         <div
           id="nav"
           className={clsx(
-            'absolute left-0 top-0 z-50 h-full w-full',
+            'absolute left-0 top-0 z-40 h-full w-full',
             isVisible !== undefined && !isVisible && 'is-fixed',
             !isVisible && isHidden && 'is-hidden'
           )}
