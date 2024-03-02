@@ -11,7 +11,6 @@ import { getCookie } from 'cookies-next';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { deleteCookie } from '~/lib/actions/cookies';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../ui/dialog';
 
@@ -25,13 +24,13 @@ export default function AccountBtn() {
 
   const handleLogout = async () => {
     let accessCode = getCookie('access');
+    console.log(accessCode);
+    // await deleteCookie('access', 'easy');
+    // await deleteCookie('auth', 'easy');
+    // await deleteCookie('refresh', 'easy');
 
-    await deleteCookie('access', 'easy');
-    await deleteCookie('auth', 'easy');
-    await deleteCookie('refresh', 'easy');
-
-    const link = `https://shopify.com/${process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID}/auth/logout?id_token_hint=${accessCode}&post_logout_redirect_uri=http://localhost:3000`;
-    router.push(link);
+    // const link = `https://shopify.com/${process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID}/auth/logout?id_token_hint=${accessCode}`;
+    // router.push(link);
   };
 
   return (
