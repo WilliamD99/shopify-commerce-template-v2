@@ -11,6 +11,7 @@ import { getCookie } from 'cookies-next';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { deleteCookie } from '~/lib/actions/cookies';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader } from '../ui/dialog';
@@ -25,13 +26,17 @@ export default function AccountBtn() {
 
   const handleLogout = async () => {
     let id_token = getCookie('id_token');
-    await deleteCookie('access', 'hard');
-    await deleteCookie('auth', 'hard');
-    await deleteCookie('refresh', 'hard');
-    await deleteCookie('id_token', 'hard');
+    if (id_token) {
+      await deleteCookie('access', 'hard');
+      await deleteCookie('auth', 'hard');
+      await deleteCookie('refresh', 'hard');
+      await deleteCookie('id_token', 'hard');
 
-    const link = `https://shopify.com/${process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID}/auth/logout?id_token_hint=${id_token}`;
-    router.push(link);
+      const link = `https://shopify.com/${process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID}/auth/logout?id_token_hint=${id_token}`;
+      router.push(link);
+    } else {
+      toast('Missing id token');
+    }
   };
 
   return (
