@@ -35,7 +35,7 @@ export type Collection = ShopifyCollection & {
 
 export type Image = {
   url: string;
-  altText: string;
+  altText?: string;
   width: number;
   height: number;
 };
@@ -583,6 +583,38 @@ export type CustomerOrderQueryType = {
   };
   variables: {
     id: string;
+  };
+};
+
+export type AccessTokenExchangeType = {
+  data: {
+    storefrontCustomerAccessTokenCreate: {
+      customerAccessToken: string;
+      userErrors: {
+        field: string[];
+        message: string;
+      }[];
+    };
+  };
+};
+
+export type CheckoutCustomerAssociateType = {
+  data: {
+    checkoutCustomerAssociateV2: {
+      checkoutUserErrors: {
+        field: string[];
+        message: string;
+      }[];
+      checkout: {
+        buyIdentity: {
+          countryCode: string;
+        };
+      };
+    };
+  };
+  variables: {
+    checkoutId: string;
+    customerAccessToken: string;
   };
 };
 

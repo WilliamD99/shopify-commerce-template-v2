@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { getAccessToken, getAuthAccessToken } from '~/lib/security/auth';
+import { getStorefrontAccessToken } from '~/lib/shopify';
 import ValidatingClient from './client';
 
 let validatingUser = async (paramsCode: string) => {
@@ -48,6 +49,8 @@ export default async function Validating({
   if (!data) return notFound();
   if (!data.access || !data.auth) return notFound();
 
+  let storefrontAccessToken = await getStorefrontAccessToken(data.access.access_token);
+
   return (
     <>
       <div id="validating" className="loading flex flex-col items-center justify-center pt-20">
@@ -55,7 +58,11 @@ export default async function Validating({
         <span className="loader z-50 h-10 w-10 border-black" />
         <div className="fixed left-0 top-0 z-40 h-screen w-screen backdrop-blur-sm"></div>
       </div>
-      <ValidatingClient access={data.access} auth={data.auth} />
+      <ValidatingClient
+        access={data.access}
+        auth={data.auth}
+        storefrontAccessToken={storefrontAccessToken}
+      />
     </>
   );
 }

@@ -64,6 +64,18 @@ export const customerAddAddressMutation = /* GraphQL */ `
   }
 `;
 
+export const customerStorefrontAccessTokenCreate = /* GraphQL */ `
+  mutation storefrontCustomerAccessTokenCreate {
+    storefrontCustomerAccessTokenCreate {
+      customerAccessToken
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
 // Storefront
 export const customerUpdateMutationSF = /* GraphQL */ `
   mutation {

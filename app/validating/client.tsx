@@ -7,10 +7,12 @@ import { AccessToken, AuthAccessToken } from '~/lib/security/auth';
 
 export default function ValidatingClient({
   auth,
-  access
+  access,
+  storefrontAccessToken
 }: {
   auth: AuthAccessToken;
   access: AccessToken;
+  storefrontAccessToken?: string;
 }) {
   const router = useRouter();
 
@@ -24,7 +26,8 @@ export default function ValidatingClient({
         setCookie('auth', auth.access_token, {
           maxAge: auth.expires_in
         }),
-        setCookie('id_token', auth.id_token)
+        setCookie('id_token', auth.id_token),
+        setCookie('sf', storefrontAccessToken ?? '')
       ]).then((es) => {
         router.push('/account');
       });

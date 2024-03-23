@@ -2,6 +2,7 @@ import { ThreeItemGrid } from 'components/grid/three-items';
 import { Suspense } from 'react';
 import Footer from '~/components/layout/footer/footer';
 import HomeSlider from '~/components/slider/home_slider';
+import AiChatBox from '~/features/ai/components';
 
 export const runtime = 'edge';
 
@@ -23,6 +24,7 @@ export default async function HomePage() {
           <Footer />
         </Suspense>
       </Suspense>
+      <AiChatBox />
     </>
   );
 }

@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { TAGS } from '../constants';
 import {
   addCustomerAddress,
+  checkoutCustomerAssociate,
   deleteCustomerAddress,
   updateCustomer,
   updateCustomerAddress
@@ -162,8 +163,17 @@ async function editCustomerAddressAction(prev: any, formData: FormData) {
   }
 }
 
+async function associateCheckoutCustomerAction(checkoutId: string) {
+  try {
+    let test = await checkoutCustomerAssociate(checkoutId);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
 export {
   addCustomerAddressAction,
+  associateCheckoutCustomerAction,
   deleteCustomerAddressAction,
   editCustomerAddressAction,
   updateCustomerAction

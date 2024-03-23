@@ -7,7 +7,7 @@ import {
 import { isShopifyError } from 'lib/type-guards';
 import { ensureStartsWith } from 'lib/utils';
 import { revalidateTag } from 'next/cache';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   addToCartMutation,
@@ -15,9 +15,11 @@ import {
   editCartItemsMutation,
   removeFromCartMutation
 } from './mutations/cart';
+import { cartBuyerIdentityUpdate } from './mutations/checkout';
 import {
   customerAddAddressMutation,
   customerDeleteAddressMutation,
+  customerStorefrontAccessTokenCreate,
   customerUpdateAddressMutation,
   customerUpdateMutationAdmin
 } from './mutations/customer';
@@ -42,6 +44,7 @@ import {
 } from './queries/product';
 import { getShopData } from './queries/shop';
 import {
+  AccessTokenExchangeType,
   Cart,
   Collection,
   Connection,
@@ -205,7 +208,8 @@ export async function shopifyCustomerFetch<T>({
   query,
   tags,
   variables,
-  token
+  token,
+  version = process.env.CUSTOMER_ACCOUNT_API_VERSION ?? 'unstable'
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
@@ -213,10 +217,11 @@ export async function shopifyCustomerFetch<T>({
   tags?: string[];
   variables?: ExtractVariables<T>;
   token: string;
+  version?: string;
 }): Promise<{ status: number; body: T } | never> {
   try {
     const shop_id = process.env.NEXT_PUBLIC_SHOPIFY_STORE_ID;
-    const auth_endpoint = `https://shopify.com/${shop_id}/account/customer/api/unstable/graphql`;
+    const auth_endpoint = `https://shopify.com/${shop_id}/account/customer/api/${version}/graphql`;
 
     const result = await fetch(auth_endpoint, {
       method: 'POST',
@@ -755,6 +760,41 @@ export async function getCustomerOrders(id: string) {
     tags: [TAGS.customer]
   });
   return res.body.data.customer;
+}
+
+// Exchange access token from Customer Accout API to Storefront
+// **Note: This is a unstable feature
+export async function getStorefrontAccessToken(token: string) {
+  const res = await shopifyCustomerFetch<AccessTokenExchangeType>({
+    query: customerStorefrontAccessTokenCreate,
+    token: token,
+    version: 'unstable'
+  });
+  return res.body.data.storefrontCustomerAccessTokenCreate.customerAccessToken;
+}
+
+// Associate customer with a checkout
+export async function checkoutCustomerAssociate(checkoutId: string) {
+  let cookieStore = cookies();
+  let sfAccessToken = cookieStore.get('sf')?.value;
+  let access_token = cookieStore.get('access')?.value;
+  console.log(sfAccessToken);
+  if (!sfAccessToken || !access_token) return;
+
+  let res = await shopifyFetch<any>({
+    query: cartBuyerIdentityUpdate,
+    variables: {
+      cartId: 'gid://shopify/Cart/c1-2356632a363a30c03b7f7f10046690ed',
+      buyerIdentity: {
+        customerAccessToken: sfAccessToken
+      }
+      // checkoutId: "gid://shopify/Checkout/2356632a363a30c03b7f7f10046690ed",
+      // customerAccessToken: sfAccessToken
+    }
+  });
+  console.log(res);
+
+  return res.body.data;
 }
 
 // This is called from `app/api/revalidate.ts` so providers can control revalidation logic.

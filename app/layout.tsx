@@ -16,6 +16,9 @@ import { Toaster } from 'components/ui/sonner';
 import 'styles/index.css';
 import './globals.css';
 
+import { AI } from '~/features/ai/action';
+import { Providers } from '~/features/ai/components/providers';
+
 const { TWITTER_CREATOR, TWITTER_SITE, SITE_NAME } = process.env;
 const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
@@ -52,18 +55,22 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="en" className={GeistSans.variable}>
       <body className="bg-white">
-        <TopMenu />
-        <Navbar menu={menu} shopData={shopData}>
-          <Suspense fallback={<OpenCart />}>
-            <Cart />
-          </Suspense>
-        </Navbar>
-        <NotificationBar />
+        <AI>
+          <Providers>
+            <TopMenu />
+            <Navbar menu={menu} shopData={shopData}>
+              <Suspense fallback={<OpenCart />}>
+                <Cart />
+              </Suspense>
+            </Navbar>
+            <NotificationBar />
 
-        <Suspense>
-          <main>{children}</main>
-        </Suspense>
-        <Toaster />
+            <Suspense>
+              <main>{children}</main>
+            </Suspense>
+            <Toaster />
+          </Providers>
+        </AI>
       </body>
     </html>
   );

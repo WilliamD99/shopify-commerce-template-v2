@@ -9,6 +9,7 @@ import { createUrl } from 'lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { associateCheckoutCustomerAction } from '~/lib/actions/customer-action';
 import CloseCart from './close-cart';
 import { DeleteItemButton } from './delete-item-button';
 import { EditItemQuantityButton } from './edit-item-quantity-button';
@@ -28,8 +29,10 @@ export default function CartModal({ cart }: { cart: Cart | undefined }) {
     let url = cart?.checkoutUrl;
     if (!url) return;
     // await navigateCheckoutWithAtkn(url);
+    console.log(cart?.id);
+    let test = await associateCheckoutCustomerAction(url);
 
-    window.location.href = `${cart?.checkoutUrl}&logged_in=true`;
+    // window.location.href = `${cart?.checkoutUrl}&logged_in=true`;
   };
 
   useEffect(() => {

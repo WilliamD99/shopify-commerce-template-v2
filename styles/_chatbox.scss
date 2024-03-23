@@ -1,0 +1,67 @@
+#chatbox {
+  bottom: 2.5rem;
+  right: 2.5rem;
+  .chatlist {
+    padding-left: 1rem;
+    padding-right: 1.5rem;
+  }
+  .user-msg {
+    .content {
+      border-top-right-radius: 0.75rem;
+      border-top-left-radius: 0.5rem;
+      border-bottom-left-radius: 0.5rem;
+      border-bottom-right-radius: 0.125rem;
+      background-color: #95a4fc;
+    }
+  }
+  .bot-msg {
+    .content {
+      background-color: #f6f8fa;
+      border-bottom-left-radius: 0.125rem;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.5rem;
+      border-bottom-right-radius: 0.75rem;
+    }
+  }
+  .user-msg,
+  .bot-msg {
+    display: flex;
+    align-items: end;
+  }
+  .user-msg {
+    justify-content: end;
+  }
+
+  .bot-msg {
+    .avatar {
+      background-color: #f6f8fa;
+    }
+
+    // Product cards inside the chatbox
+    .product-list {
+      .product-card {
+        position: relative;
+
+        .product-title {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          padding-top: 1rem;
+        }
+      }
+    }
+  }
+
+  &_empty {
+    .action {
+      color: rgb(34, 34, 34);
+    }
+  }
+
+  &_input {
+    width: 100%;
+    #action-new {
+      background-color: white;
+    }
+  }
+}
