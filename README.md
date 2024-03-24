@@ -1,5 +1,7 @@
 # Next.js Shopify E-Commerce Template
 
+![product-details](https://github.com/WilliamD99/shopify-commerce-template-v2/assets/43860904/f953605e-3793-4d36-9a59-e83e8d340b71)
+
 Use this template to bootstrap your Shopify Headless Website. This is a Next.js 14 and App Router-ready website featuring:
 
 - Next.js App Router
