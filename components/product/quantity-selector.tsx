@@ -18,6 +18,8 @@ export default function ProductQuantitySelector({
   const searchParams = useSearchParams();
   const pathName = usePathname();
 
+  let quantityParam = searchParams.get('quantity');
+
   const selectedOption = options.map((option) => {
     return {
       name: option.name,
@@ -33,25 +35,31 @@ export default function ProductQuantitySelector({
 
   const handleChangeQuantity = (e: ChangeEvent<HTMLInputElement>) => {
     const params = new URLSearchParams(searchParams.toString());
-    console.log(e.target.value);
     params.set('quantity', e.target.value);
-
     router.push(pathName + '?' + params.toString());
   };
 
   return (
     <>
-      <div className="mb-8">
-        <p className="mb-4 text-sm font-semibold">Quantity</p>
-        <Input
-          onChange={handleChangeQuantity}
-          name="quantity"
-          disabled={!selectedVariant?.availableForSale}
-          placeholder="Quantity"
-          type="number"
-          min={0}
-          max={selectedVariant?.quantityAvailable}
-        />
+      <div className="mb-8 flex flex-row items-center space-x-6">
+        <p className="text-sm font-semibold">Quantity</p>
+        <div className="flex flex-row space-x-4">
+          <Input
+            onChange={handleChangeQuantity}
+            name="quantity"
+            disabled={!selectedVariant?.availableForSale}
+            placeholder={`${
+              selectedVariant?.quantityAvailable
+                ? `${selectedVariant.quantityAvailable} items available`
+                : '0'
+            }`}
+            type="number"
+            min={0}
+            max={selectedVariant?.quantityAvailable}
+            defaultValue={quantityParam ?? ''}
+            className="w-44"
+          />
+        </div>
       </div>
     </>
   );

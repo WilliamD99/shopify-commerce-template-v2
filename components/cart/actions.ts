@@ -5,9 +5,16 @@ import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 
-export async function addItem(prevState: any, selectedVariantId: string | undefined) {
+export async function addItem(
+  prevState: any,
+  {
+    selectedVariantId,
+    quantity = 1
+  }: { selectedVariantId: string | undefined; quantity: string | number }
+) {
   let cartId = cookies().get('cartId')?.value;
   let cart;
+  let parsedQuantity: number = parseInt(String(quantity));
 
   if (cartId) {
     cart = await getCart(cartId);
@@ -24,7 +31,7 @@ export async function addItem(prevState: any, selectedVariantId: string | undefi
   }
 
   try {
-    await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity: 1 }]);
+    await addToCart(cartId, [{ merchandiseId: selectedVariantId, quantity: parsedQuantity }]);
     revalidateTag(TAGS.cart);
   } catch (e) {
     return 'Error adding item to cart';

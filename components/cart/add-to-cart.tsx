@@ -8,12 +8,20 @@ import { useFormState, useFormStatus } from 'react-dom';
 
 function SubmitButton({
   availableForSale,
-  selectedVariantId
+  selectedVariantId,
+  price
 }: {
   availableForSale: boolean;
   selectedVariantId: string | undefined;
+  price?: string;
 }) {
+  const searchParams = useSearchParams();
+  let quantity = searchParams.get('quantity') ?? 0;
+  let parsedQuantity: number = parseInt(String(quantity));
+
   const { pending } = useFormStatus();
+
+  console.log(pending);
   const buttonClasses =
     'relative flex w-full items-center justify-center rounded-full bg-black p-4 tracking-wide text-white transition hover:opacity-60';
   const disabledClasses = 'cursor-not-allowed opacity-60 hover:opacity-60';
@@ -31,7 +39,7 @@ function SubmitButton({
       <button
         aria-label="Please select an option"
         aria-disabled
-        className={clsx(buttonClasses, disabledClasses)}
+        className={clsx(pending && disabledClasses, buttonClasses)}
       >
         Add To Cart
       </button>
@@ -45,12 +53,16 @@ function SubmitButton({
       }}
       aria-label="Add to cart"
       aria-disabled={pending}
-      className={clsx(buttonClasses, {
-        'hover:opacity-90': true,
-        disabledClasses: pending
-      })}
+      className={clsx(
+        buttonClasses,
+        pending && disabledClasses,
+        parsedQuantity === 0 && disabledClasses
+      )}
     >
-      Add To Cart
+      Add To Cart{' '}
+      <span className="ml-2 font-semibold">
+        ({price && `$${parseInt(price) * parsedQuantity}`})
+      </span>
     </button>
   );
 }
@@ -70,12 +82,21 @@ export function AddToCart({
       (option) => option.value === searchParams.get(option.name.toLowerCase())
     )
   );
+  const quantity = searchParams.get('quantity') ?? 1;
+
   const selectedVariantId = variant?.id || defaultVariantId;
-  const actionWithVariant = formAction.bind(null, selectedVariantId);
+  const actionWithVariant = formAction.bind(null, {
+    selectedVariantId,
+    quantity
+  });
 
   return (
     <form action={actionWithVariant}>
-      <SubmitButton availableForSale={availableForSale} selectedVariantId={selectedVariantId} />
+      <SubmitButton
+        price={variant?.price.amount}
+        availableForSale={availableForSale}
+        selectedVariantId={selectedVariantId}
+      />
       <p aria-live="polite" className="sr-only" role="status">
         {message}
       </p>
