@@ -21,7 +21,7 @@ function SubmitButton({
 
   const { pending } = useFormStatus();
 
-  console.log(pending);
+  console.log(parsedQuantity);
   const buttonClasses =
     'relative flex w-full items-center justify-center rounded-full bg-black p-4 tracking-wide text-white transition hover:opacity-60';
   const disabledClasses = 'cursor-not-allowed opacity-60 hover:opacity-60';
@@ -59,10 +59,12 @@ function SubmitButton({
         parsedQuantity === 0 && disabledClasses
       )}
     >
-      Add To Cart{' '}
-      <span className="ml-2 font-semibold">
-        ({price && `$${parseInt(price) * parsedQuantity}`})
-      </span>
+      Add To Cart
+      {quantity && (
+        <span className="ml-2 font-semibold">
+          ({price && `$${parseInt(price) * parsedQuantity}`})
+        </span>
+      )}
     </button>
   );
 }
