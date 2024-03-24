@@ -36,6 +36,7 @@ export default async function SearchPage({
           <ProductGridItems products={products} />
         </Grid>
       ) : null}
+      <div className="h-screen"></div>
     </>
   );
 }

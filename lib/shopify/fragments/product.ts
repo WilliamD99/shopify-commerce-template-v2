@@ -24,12 +24,13 @@ const productFragment = /* GraphQL */ `
         currencyCode
       }
     }
-    variants(first: 250) {
+    variants(first: 25) {
       edges {
         node {
           id
           title
           availableForSale
+          quantityAvailable
           selectedOptions {
             name
             value

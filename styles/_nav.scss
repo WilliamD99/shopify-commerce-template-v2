@@ -1,13 +1,14 @@
 #nav_wrapper {
-  height: 70px;
+  height: 90px;
   #nav {
-    height: 70px;
+    height: 90px;
     &.is-fixed {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       transition: transform 0.15s ease;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
     }
     &.is-hidden {
       transform: translateY(-100px);

@@ -3,6 +3,7 @@ import Price from 'components/price';
 import Prose from 'components/prose';
 import { Product } from 'lib/shopify/types';
 import ProductAccordion from './accordion/index';
+import ProductQuantitySelector from './quantity-selector';
 import { VariantSelector } from './variant-selector';
 
 export function ProductDescription({ product }: { product: Product }) {
@@ -18,6 +19,7 @@ export function ProductDescription({ product }: { product: Product }) {
         </div>
       </div>
       <VariantSelector options={product.options} variants={product.variants} />
+      <ProductQuantitySelector variants={product.variants} options={product.options} />
 
       <AddToCart variants={product.variants} availableForSale={product.availableForSale} />
       {product.descriptionHtml ? (
